@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> EPSTEINS ISLAND - Discord Server</title>
+    <title>EPSTEINS ISLAND - Discord Server</title>
     <style>
         /* --- CSS STYLING --- */
         :root {
@@ -22,20 +22,40 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Verhindert das Scrollen, solange der Start-Screen aktiv ist */
         body.locked {
             overflow: hidden;
             height: 100vh;
         }
 
         body {
-            /* Das Hintergrundbild mit einem abgedunkelten Verlauf für perfekten Kontrast */
-            background: linear-gradient(rgba(15, 15, 30, 0.65), rgba(15, 15, 30, 0.85)), 
-                        url('https://i.imgur.com/Vvv1WqC.png') no-repeat center center fixed;
-            background-size: cover;
+            /* Der alte Hintergrund wurde entfernt, da wir jetzt ein Video nutzen */
+            background-color: var(--discord-darkest);
             color: var(--text-normal);
             overflow-x: hidden;
             min-height: 100vh;
+            position: relative;
+        }
+
+        /* --- NEUES HAUPT-HINTERGRUNDVIDEO --- */
+        #main-bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2; /* Ganz nach hinten */
+        }
+
+        /* Abdunkelung über dem Hauptvideo für besseren Kontrast */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(15, 15, 30, 0.65), rgba(15, 15, 30, 0.85));
+            z-index: -1; /* Über dem Video, unter dem Inhalt */
         }
 
         /* --- START EXPLORER SCREEN --- */
@@ -45,12 +65,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0b0b13; /* Sehr dunkler Hintergrund */
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             transition: opacity 1s ease, visibility 1s ease;
+            overflow: hidden;
         }
 
         #entry-screen.fade-out {
@@ -58,28 +79,61 @@
             visibility: hidden;
         }
 
-        #start-btn {
+        /* Hintergrundvideo Styling - Echtes Fullscreen (Explorer) */
+        #bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+        }
+
+        /* Container für die Buttons über dem Video */
+        #button-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Gemeinsames Styling für die Entry-Buttons */
+        .entry-btn {
             padding: 20px 50px;
             font-size: 1.5rem;
             font-weight: bold;
             color: var(--text-header);
-            background: transparent;
+            background: rgba(0, 0, 0, 0.6);
             border: 2px solid var(--discord-blue);
             border-radius: 40px;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 4px;
             transition: all 0.4s ease;
-            box-shadow: 0 0 15px rgba(88, 101, 242, 0.2) inset, 0 0 20px rgba(88, 101, 242, 0.3);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.4) inset, 0 0 20px rgba(88, 101, 242, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
-        #start-btn:hover {
+        .entry-btn:hover {
             background: var(--discord-blue);
             transform: scale(1.05);
             box-shadow: 0 0 30px var(--discord-blue), 0 0 20px var(--discord-blue) inset;
             letter-spacing: 6px;
+        }
+
+        /* Der Willkommens-Button ist anfangs versteckt */
+        #enter-site-btn {
+            display: none;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Container und Layout */
@@ -87,6 +141,8 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+            position: relative; /* Wichtig für den z-index Layering */
+            z-index: 1;
         }
 
         /* Hero Section (Startbereich) */
@@ -137,7 +193,6 @@
             z-index: 1;
         }
 
-        /* Discord Icon SVG Styling */
         .discord-icon {
             width: 28px;
             height: 28px;
@@ -146,7 +201,6 @@
             transition: transform 0.4s ease;
         }
 
-        /* Glanz-Effekt der über den Button huscht */
         .join-btn::after {
             content: '';
             position: absolute;
@@ -201,7 +255,7 @@
             box-shadow: 0 0 10px var(--discord-blue);
         }
 
-        /* Cards (Glassmorphismus Design) */
+        /* Cards */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -250,7 +304,7 @@
             color: #b9bbbe;
         }
 
-        /* --- VIDEO SECTION CSS --- */
+        /* Video Wrapper */
         .video-wrapper {
             display: flex;
             justify-content: center;
@@ -288,29 +342,28 @@
             background: rgba(0, 0, 0, 0.5);
             margin-top: 50px;
             border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            z-index: 1;
         }
 
-        /* --- KEYFRAMES FÜR ANIMATIONEN --- */
+        /* Keyframes & Animations */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
             100% { transform: translateY(0px); }
         }
 
-        /* Scroll-Animationen (Unsichtbar beim Start) */
         .hidden {
             opacity: 0;
             transform: translateY(50px);
             transition: all 0.8s ease-out;
         }
 
-        /* Sichtbar machen */
         .show {
             opacity: 1;
             transform: translateY(0);
         }
 
-        /* Grid-Karten einzeln nacheinander einblenden */
         .card:nth-child(1) { transition-delay: 0.1s; }
         .card:nth-child(2) { transition-delay: 0.2s; }
         .card:nth-child(3) { transition-delay: 0.3s; }
@@ -318,32 +371,46 @@
         .card:nth-child(5) { transition-delay: 0.5s; }
         .card:nth-child(6) { transition-delay: 0.6s; }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             .hero-title { font-size: 3rem; }
             .hero-subtitle { font-size: 1.2rem; }
             section { padding: 60px 0; }
             .video-wrapper { padding: 10px; }
-            #start-btn { font-size: 1.2rem; padding: 15px 30px; }
+            .entry-btn { font-size: 1.2rem; padding: 15px 30px; }
         }
     </style>
 </head>
 <body class="locked">
 
-    <!-- START EXPLORER SCREEN (Eingangs-Gate) -->
+    <!-- NEUES VIDEO FÜR DIE HAUPTSEITE (läuft stumm im Hintergrund) -->
+    <video id="main-bg-video" autoplay loop muted playsinline>
+        <source src="https://i.imgur.com/iRQfa59.mp4" type="video/mp4">
+    </video>
+    <div class="bg-overlay"></div>
+
+    <!-- START EXPLORER SCREEN -->
     <div id="entry-screen">
-        <button id="start-btn">Start Explorer</button>
+        <!-- Das Video für den Startbildschirm (ohne Autoplay & ohne Loop für den ersten Durchlauf) -->
+        <video id="bg-video" playsinline>
+            <source src="https://i.imgur.com/bYxGM1l.mp4" type="video/mp4">
+        </video>
+        
+        <div id="button-container">
+            <!-- Button 1: Startet das Video -->
+            <button id="start-video-btn" class="entry-btn">Schaue Video für Zugriff auf die Seite</button>
+            
+            <!-- Button 2: Erscheint erst, wenn das Video fertig geschaut wurde -->
+            <button id="enter-site-btn" class="entry-btn">Willkommen auf der Insel</button>
+        </div>
     </div>
 
     <!-- Header / Hero Section (Startbildschirm) -->
     <header>
         <div class="container hidden">
-            <h1 class="hero-title"> EPSTEINS ISLAND</h1>
+            <h1 class="hero-title">EPSTEINS ISLAND</h1>
             <p class="hero-subtitle">Willkommen auf unserem Server! Entspanne dich, lerne neue Leute kennen und werde Teil einer fantastischen Community.</p>
             
-            <!-- Neuer Button mit Discord Logo und Link -->
             <a href="https://discord.gg/DG8GGrmRX5" class="join-btn" target="_blank">
-                <!-- SVG Discord Logo -->
                 <svg class="discord-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 127.14 96.36">
                     <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.31,60,73.31,53s5-12.74,11.43-12.74S96.2,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
                 </svg>
@@ -358,42 +425,36 @@
             <h2 class="section-title hidden">Unser Server</h2>
             
             <div class="features-grid">
-                <!-- Card 1: Verifizierung -->
                 <div class="card hidden">
                     <div class="card-icon">🛡️</div>
                     <h3>100% Sicher</h3>
                     <p>Damit du in Ruhe chatten kannst, nutzen wir eine fortschrittliche Security Verification App. Das hält Spam fern und sorgt für ein sicheres Umfeld für alle.</p>
                 </div>
 
-                <!-- Card 2: Main Chat -->
                 <div class="card hidden">
                     <div class="card-icon">💬</div>
                     <h3>Main Chat</h3>
                     <p>Hier trifft sich die Community. Quatsche über den Alltag, teile deine Erlebnisse und finde neue Freunde auf EPSTEINS ISLAND.</p>
                 </div>
 
-                <!-- Card 3: Pirate Bay -->
                 <div class="card hidden">
                     <div class="card-icon">🏴‍☠️</div>
                     <h3>pirate bay</h3>
                     <p>Ahoi! Setze die Segel, tausche dich in der Pirate Bay über die verborgenen Schätze des Internets aus und erobere die sieben Weltmeere.</p>
                 </div>
 
-                <!-- Card 4: Bot-Stuff -->
                 <div class="card hidden">
                     <div class="card-icon">🤖</div>
                     <h3>Bot-Stuff</h3>
                     <p>Nutze unsere umfangreichen Bots für Musik, Leveling, Minigames und vieles mehr in einem extra dafür vorgesehenen Bereich.</p>
                 </div>
 
-                <!-- Card 5: Memes -->
                 <div class="card hidden">
                     <div class="card-icon">😹</div>
                     <h3>Memes</h3>
                     <p>Lachen ist gesund! Teile deine besten Memes, lustigen Bilder und Videos mit der gesamten Server-Community.</p>
                 </div>
 
-                <!-- Card 6: Coding -->
                 <div class="card hidden">
                     <div class="card-icon">💻</div>
                     <h3>Coding</h3>
@@ -410,7 +471,7 @@
             
             <div class="video-wrapper hidden">
                 <video controls autoplay loop muted class="promo-video">
-                    <source src="https://i.imgur.com/nuFsHFb.mp4" type="video/mp4">
+                    <source src="https://i.imgur.com/ZmbBISg.mp4" type="video/mp4">
                     Dein Browser unterstützt das Video-Tag nicht.
                 </video>
             </div>
@@ -420,22 +481,51 @@
     <!-- Footer -->
     <footer>
         <div class="container hidden">
-            <p>&copy; 2026  EP ISLAND Discord Server. Alle Rechte vorbehalten.</p>
+            <p>&copy; 2026 EP ISLAND Discord Server. Alle Rechte vorbehalten.</p>
         </div>
     </footer>
 
     <!-- --- JAVASCRIPT FÜR START SCREEN & ANIMATIONEN --- -->
     <script>
-        // --- 1. START EXPLORER LOGIK ---
-        document.getElementById('start-btn').addEventListener('click', function() {
-            // Blendet den Start-Bildschirm aus
-            document.getElementById('entry-screen').classList.add('fade-out');
+        const startVideoBtn = document.getElementById('start-video-btn');
+        const enterSiteBtn = document.getElementById('enter-site-btn');
+        const bgVideo = document.getElementById('bg-video');
+
+        // 1. Klick auf "Schaue Video..."
+        startVideoBtn.addEventListener('click', function() {
+            // Button verschwinden lassen
+            startVideoBtn.style.display = 'none';
             
-            // Hebt die Scroll-Sperre auf
-            document.body.classList.remove('locked');
+            // Video abspielen (jetzt mit Erlaubnis des Browsers, da aktiv geklickt wurde!)
+            bgVideo.play().catch(function(error) {
+                console.log("Fehler beim Abspielen des Videos:", error);
+                // Fallback: Falls das Video gar nicht laden sollte, erscheint der Button sofort
+                enterSiteBtn.style.display = 'block';
+            });
         });
 
-        // --- 2. SCROLL-ANIMATIONEN (Fade-In Effekt) ---
+        // 2. Sobald das Video das erste Mal ZU ENDE ist:
+        bgVideo.addEventListener('ended', function() {
+            // Zeige den neuen Button an
+            enterSiteBtn.style.display = 'block';
+            
+            // Stelle das Video auf Endlosschleife (Loop) um
+            bgVideo.loop = true;
+            
+            // Starte das Video direkt wieder
+            bgVideo.play();
+        }, { once: true });
+
+        // 3. Klick auf "Willkommen auf der Insel" (Einlass zur Seite)
+        enterSiteBtn.addEventListener('click', function() {
+            document.getElementById('entry-screen').classList.add('fade-out');
+            document.body.classList.remove('locked');
+            
+            // Pausiere das Explorer-Video, um Internet-Leistung zu sparen
+            bgVideo.pause();
+        });
+
+        // --- SCROLL-ANIMATIONEN (Fade-In Effekt für die restliche Webseite) ---
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
