@@ -539,5 +539,23 @@
         const hiddenElements = document.querySelectorAll('.hidden');
         hiddenElements.forEach((el) => observer.observe(el));
     </script>
+    <!-- --- VOLLBILD-ERZWINGUNG --- -->
+    <script>
+        // Wartet auf den allerersten Klick des Nutzers (z.B. auf den "Schaue Video..." Button)
+        document.addEventListener('click', function() {
+            let elem = document.documentElement; // Wählt die gesamte Webseite aus
+            
+            // Prüft, ob wir nicht schon im Vollbild sind
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log(err));
+                } else if (elem.webkitRequestFullscreen) { /* Safari Kompatibilität */
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) { /* IE11 Kompatibilität */
+                    elem.msRequestFullscreen();
+                }
+            }
+        }, { once: true }); // "{ once: true }" sorgt dafür, dass dieser Code nur beim allerersten Klick ausgeführt wird
+    </script>
 </body>
 </html>
