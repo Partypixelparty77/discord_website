@@ -28,7 +28,6 @@
         }
 
         body {
-            /* Der alte Hintergrund wurde entfernt, da wir jetzt ein Video nutzen */
             background-color: var(--discord-darkest);
             color: var(--text-normal);
             overflow-x: hidden;
@@ -44,10 +43,9 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            z-index: -2; /* Ganz nach hinten */
+            z-index: -2; 
         }
 
-        /* Abdunkelung über dem Hauptvideo für besseren Kontrast */
         .bg-overlay {
             position: fixed;
             top: 0;
@@ -55,7 +53,7 @@
             width: 100vw;
             height: 100vh;
             background: linear-gradient(rgba(15, 15, 30, 0.65), rgba(15, 15, 30, 0.85));
-            z-index: -1; /* Über dem Video, unter dem Inhalt */
+            z-index: -1; 
         }
 
         /* --- START EXPLORER SCREEN --- */
@@ -79,7 +77,6 @@
             visibility: hidden;
         }
 
-        /* Hintergrundvideo Styling - Echtes Fullscreen (Explorer) */
         #bg-video {
             position: absolute;
             top: 0;
@@ -90,7 +87,6 @@
             z-index: 0;
         }
 
-        /* Container für die Buttons über dem Video */
         #button-container {
             position: relative;
             z-index: 10;
@@ -100,7 +96,6 @@
             gap: 20px;
         }
 
-        /* Gemeinsames Styling für die Entry-Buttons */
         .entry-btn {
             padding: 20px 50px;
             font-size: 1.5rem;
@@ -125,7 +120,6 @@
             letter-spacing: 6px;
         }
 
-        /* Der Willkommens-Button ist anfangs versteckt */
         #enter-site-btn {
             display: none;
             animation: fadeIn 1s forwards;
@@ -136,16 +130,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Container und Layout */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
-            position: relative; /* Wichtig für den z-index Layering */
+            position: relative; 
             z-index: 1;
         }
 
-        /* Hero Section (Startbereich) */
         header {
             height: 100vh;
             display: flex;
@@ -175,7 +167,6 @@
             line-height: 1.5;
         }
 
-        /* Discord Button Enhanced */
         .join-btn {
             display: inline-flex;
             align-items: center;
@@ -228,7 +219,6 @@
             transform: scale(1.15) rotate(-10deg);
         }
 
-        /* Sections */
         section {
             padding: 100px 0;
         }
@@ -255,7 +245,6 @@
             box-shadow: 0 0 10px var(--discord-blue);
         }
 
-        /* Cards */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -304,7 +293,6 @@
             color: #b9bbbe;
         }
 
-        /* Video Wrapper */
         .video-wrapper {
             display: flex;
             justify-content: center;
@@ -335,7 +323,6 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* Footer */
         footer {
             text-align: center;
             padding: 40px 0;
@@ -346,7 +333,6 @@
             z-index: 1;
         }
 
-        /* Keyframes & Animations */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
@@ -382,7 +368,13 @@
 </head>
 <body class="locked">
 
-    <!-- NEUES VIDEO FÜR DIE HAUPTSEITE (läuft stumm im Hintergrund) -->
+    <!-- AUDIO ELEMENT FÜR DEN SONG -->
+    <!-- WICHTIG: Wenn der Song auf GitHub Pages liegt, nutze "audio.mp3" ohne den Schrägstrich am Anfang! -->
+    <audio id="bg-audio" loop>
+        <source src="audio.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- NEUES VIDEO FÜR DIE HAUPTSEITE -->
     <video id="main-bg-video" autoplay loop muted playsinline>
         <source src="https://i.imgur.com/iRQfa59.mp4" type="video/mp4">
     </video>
@@ -390,16 +382,12 @@
 
     <!-- START EXPLORER SCREEN -->
     <div id="entry-screen">
-        <!-- Das Video für den Startbildschirm (ohne Autoplay & ohne Loop für den ersten Durchlauf) -->
         <video id="bg-video" playsinline>
             <source src="https://i.imgur.com/bYxGM1l.mp4" type="video/mp4">
         </video>
         
         <div id="button-container">
-            <!-- Button 1: Startet das Video -->
             <button id="start-video-btn" class="entry-btn">Schaue Video für Zugriff auf die Seite</button>
-            
-            <!-- Button 2: Erscheint erst, wenn das Video fertig geschaut wurde -->
             <button id="enter-site-btn" class="entry-btn">Willkommen auf der Insel</button>
         </div>
     </div>
@@ -485,47 +473,60 @@
         </div>
     </footer>
 
-    <!-- --- JAVASCRIPT FÜR START SCREEN & ANIMATIONEN --- -->
+    <!-- --- JAVASCRIPT --- -->
     <script>
         const startVideoBtn = document.getElementById('start-video-btn');
         const enterSiteBtn = document.getElementById('enter-site-btn');
         const bgVideo = document.getElementById('bg-video');
+        
+        // Das Audio Element abrufen
+        const bgAudio = document.getElementById('bg-audio');
+        bgAudio.volume = 0.3; // Stellt die Lautstärke auf 30% (Werte von 0.0 bis 1.0)
 
         // 1. Klick auf "Schaue Video..."
         startVideoBtn.addEventListener('click', function() {
             // Button verschwinden lassen
             startVideoBtn.style.display = 'none';
             
-            // Video abspielen (jetzt mit Erlaubnis des Browsers, da aktiv geklickt wurde!)
+            // Video abspielen
             bgVideo.play().catch(function(error) {
                 console.log("Fehler beim Abspielen des Videos:", error);
-                // Fallback: Falls das Video gar nicht laden sollte, erscheint der Button sofort
                 enterSiteBtn.style.display = 'block';
             });
+
+            // AUDIO STARTEN (Dank des Klicks wird es vom Browser nun erlaubt)
+            bgAudio.play().catch(function(error) {
+                console.log("Audio blockiert:", error);
+            });
+            
+            // Vollbild erzwingen beim ersten Klick
+            let elem = document.documentElement;
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().catch(err => console.log(err));
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            }
         });
 
         // 2. Sobald das Video das erste Mal ZU ENDE ist:
         bgVideo.addEventListener('ended', function() {
-            // Zeige den neuen Button an
             enterSiteBtn.style.display = 'block';
-            
-            // Stelle das Video auf Endlosschleife (Loop) um
             bgVideo.loop = true;
-            
-            // Starte das Video direkt wieder
             bgVideo.play();
         }, { once: true });
 
-        // 3. Klick auf "Willkommen auf der Insel" (Einlass zur Seite)
+        // 3. Klick auf "Willkommen auf der Insel"
         enterSiteBtn.addEventListener('click', function() {
             document.getElementById('entry-screen').classList.add('fade-out');
             document.body.classList.remove('locked');
-            
-            // Pausiere das Explorer-Video, um Internet-Leistung zu sparen
             bgVideo.pause();
         });
 
-        // --- SCROLL-ANIMATIONEN (Fade-In Effekt für die restliche Webseite) ---
+        // --- SCROLL-ANIMATIONEN ---
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -539,47 +540,6 @@
         const hiddenElements = document.querySelectorAll('.hidden');
         hiddenElements.forEach((el) => observer.observe(el));
     </script>
-    <!-- --- VOLLBILD-ERZWINGUNG --- -->
-    <script>
-        // Wartet auf den allerersten Klick des Nutzers (z.B. auf den "Schaue Video..." Button)
-        document.addEventListener('click', function() {
-            let elem = document.documentElement; // Wählt die gesamte Webseite aus
-            
-            // Prüft, ob wir nicht schon im Vollbild sind
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => console.log(err));
-                } else if (elem.webkitRequestFullscreen) { /* Safari Kompatibilität */
-                    elem.webkitRequestFullscreen();
-                } else if (elem.msRequestFullscreen) { /* IE11 Kompatibilität */
-                    elem.msRequestFullscreen();
-                }
-            }
-        }, { once: true }); // "{ once: true }" sorgt dafür, dass dieser Code nur beim allerersten Klick ausgeführt wird
-        <!-- Hintergrund-Audio Element -->
-<audio id="bgAudio" loop>
-  <source src="/audio.mp3" type="audio/mpeg">
-  Dein Browser unterstützt kein Audio.
-</audio>
 
-<script>
-  const audio = document.getElementById('bgAudio');
-
-  // Funktion zum Starten der Musik
-  function playMusic() {
-    audio.play().catch(error => {
-      console.log("Autoplay wurde vom Browser blockiert. Musik startet nach dem ersten Klick.");
-    });
-  }
-
-  // Versuch 1: Sofort beim Laden
-  window.addEventListener('load', playMusic);
-
-  // Versuch 2: Da Browser Autoplay oft blockieren, startet der Song 
-  // spätestens, sobald der Nutzer irgendwo auf die Seite klickt.
-  window.addEventListener('click', playMusic, { once: true });
-</script>
-
-    </script>
 </body>
 </html>
