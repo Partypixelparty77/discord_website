@@ -556,6 +556,30 @@
                 }
             }
         }, { once: true }); // "{ once: true }" sorgt dafür, dass dieser Code nur beim allerersten Klick ausgeführt wird
+        <!-- Hintergrund-Audio Element -->
+<audio id="bgAudio" loop>
+  <source src="/audio.mp3" type="audio/mpeg">
+  Dein Browser unterstützt kein Audio.
+</audio>
+
+<script>
+  const audio = document.getElementById('bgAudio');
+
+  // Funktion zum Starten der Musik
+  function playMusic() {
+    audio.play().catch(error => {
+      console.log("Autoplay wurde vom Browser blockiert. Musik startet nach dem ersten Klick.");
+    });
+  }
+
+  // Versuch 1: Sofort beim Laden
+  window.addEventListener('load', playMusic);
+
+  // Versuch 2: Da Browser Autoplay oft blockieren, startet der Song 
+  // spätestens, sobald der Nutzer irgendwo auf die Seite klickt.
+  window.addEventListener('click', playMusic, { once: true });
+</script>
+
     </script>
 </body>
 </html>
